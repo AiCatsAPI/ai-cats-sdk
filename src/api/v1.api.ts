@@ -2,12 +2,58 @@ import { CatInfo, SearchResult, Size, Theme } from '../models';
 
 const ApiUrl = 'https://api.ai-cats.net/v1';
 
+/** Response type for image requests */
+export type ResponseType = 'blob' | 'arrayBuffer' | 'base64' | 'dataUrl';
+
+/** Image response based on responseType */
+export type ImageResponse<T extends ResponseType = 'blob'> = T extends 'blob'
+  ? Blob
+  : T extends 'arrayBuffer'
+    ? ArrayBuffer
+    : T extends 'base64'
+      ? string
+      : T extends 'dataUrl'
+        ? string
+        : Blob;
+
+/** Convert ArrayBuffer to desired response type */
+async function toResponseType<T extends ResponseType>(
+  buffer: ArrayBuffer,
+  type: T = 'blob' as T,
+): Promise<ImageResponse<T>> {
+  switch (type) {
+    case 'arrayBuffer':
+      return buffer as ImageResponse<T>;
+    case 'base64': {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary) as ImageResponse<T>;
+    }
+    case 'dataUrl': {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return `data:image/jpeg;base64,${btoa(binary)}` as ImageResponse<T>;
+    }
+    case 'blob':
+    default:
+      return new Blob([buffer], { type: 'image/jpeg' }) as ImageResponse<T>;
+  }
+}
+
 /** Options for getting a random cat */
-export interface RandomCatOptions {
+export interface RandomCatOptions<T extends ResponseType = 'blob'> {
   /** Image size (default: Large) */
   size?: Size;
   /** Theme of the cat image */
   theme?: Theme;
+  /** Response format (default: blob) */
+  responseType?: T;
 }
 
 /** Options for searching cats */
@@ -34,14 +80,24 @@ export interface SimilarOptions {
   size?: Size;
 }
 
+/** Options for getting a cat by ID */
+export interface GetByIdOptions<T extends ResponseType = 'blob'> {
+  /** Image size (default: Large) */
+  size?: Size;
+  /** Response format (default: blob) */
+  responseType?: T;
+}
+
 /**
  * Get a random AI-generated cat image
- * @param options - Optional size and theme settings
- * @returns A Blob containing the JPEG image
+ * @param options - Optional size, theme, and responseType settings
+ * @returns Image in the specified format (default: Blob)
  * @example
- * const imageBlob = await AiCats.random({ theme: Theme.Halloween });
+ * const blob = await AiCats.random({ theme: Theme.Halloween });
+ * const base64 = await AiCats.random({ responseType: 'base64' });
+ * const dataUrl = await AiCats.random({ responseType: 'dataUrl' });
  */
-async function random(options?: RandomCatOptions): Promise<Blob> {
+async function random<T extends ResponseType = 'blob'>(options?: RandomCatOptions<T>): Promise<ImageResponse<T>> {
   const params = new URLSearchParams();
   if (options?.size) params.set('size', options.size);
   if (options?.theme) params.set('theme', options.theme);
@@ -52,24 +108,29 @@ async function random(options?: RandomCatOptions): Promise<Blob> {
     throw new Error(`Error fetching cat image: ${response.statusText}`);
   }
   const buffer = await response.arrayBuffer();
-  return new Blob([buffer], { type: 'image/jpeg' });
+  return toResponseType(buffer, options?.responseType ?? ('blob' as T));
 }
 
 /**
  * Get a specific cat image by ID
  * @param id - The unique cat image ID
- * @param size - Image size (default: Large)
- * @returns A Blob containing the JPEG image
+ * @param options - Optional size and responseType settings
+ * @returns Image in the specified format (default: Blob)
  * @example
- * const imageBlob = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', Size.Medium);
+ * const blob = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e');
+ * const base64 = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { responseType: 'base64' });
  */
-async function getById(id: string, size: Size = Size.Large): Promise<Blob> {
+async function getById<T extends ResponseType = 'blob'>(
+  id: string,
+  options?: GetByIdOptions<T>,
+): Promise<ImageResponse<T>> {
+  const size = options?.size ?? Size.Large;
   const response = await fetch(`${ApiUrl}/cat/${id}?size=${size}`);
   if (!response.ok) {
     throw new Error(`Error fetching cat image: ${response.statusText}`);
   }
   const buffer = await response.arrayBuffer();
-  return new Blob([buffer], { type: 'image/jpeg' });
+  return toResponseType(buffer, options?.responseType ?? ('blob' as T));
 }
 
 /**
@@ -163,7 +224,7 @@ async function getSearchCompletion(options: SearchOptions = {}): Promise<string>
  * const themes = await AiCats.getThemes();
  * // ['Default', 'Halloween', 'Xmas', ...]
  */
-async function getThemes(): Promise<string[]> {
+async function getThemes(): Promise<Theme[]> {
   const response = await fetch(`${ApiUrl}/cat/theme-list`);
   if (!response.ok) {
     throw new Error(`Error fetching themes: ${response.statusText}`);

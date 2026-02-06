@@ -6,6 +6,8 @@ import { Theme } from '../enums/theme.enum';
 export interface CatInfo {
   /** Unique identifier for the cat image */
   id: string;
+  /** URL to access the cat image */
+  url: string;
   /** Unix timestamp when the image was created */
   dateCreated: number;
   /** The AI prompt used to generate this cat image */

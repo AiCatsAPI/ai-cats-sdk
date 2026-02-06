@@ -30,26 +30,39 @@ Get a random AI-generated cat image.
 
 ```typescript
 const blob = await AiCats.random({
-  size: Size.Medium,     // Image size (default: Large)
-  theme: Theme.Xmas      // Optional theme
+  size: Size.Medium,       // Image size (default: Large)
+  theme: Theme.Xmas,       // Optional theme
+  responseType: 'blob'     // 'blob' | 'arrayBuffer' | 'base64' | 'dataUrl'
 });
+
+// Get as base64
+const base64 = await AiCats.random({ responseType: 'base64' });
+
+// Get as data URL (for direct use in img.src)
+const dataUrl = await AiCats.random({ responseType: 'dataUrl' });
 ```
 
-### `AiCats.getById(id, size?)`
+### `AiCats.getById(id, options?)`
 Get a specific cat image by ID.
 
 ```typescript
-const blob = await AiCats.getById('abc-123-def', Size.Small);
+const blob = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { size: Size.Small });
+
+// Get as base64
+const base64 = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { responseType: 'base64' });
+
+// Get as data URL
+const dataUrl = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { responseType: 'dataUrl' });
 ```
 
 ### `AiCats.getInfo(id)`
 Get detailed information about a cat image.
 
 ```typescript
-const info = await AiCats.getInfo('abc-123-def');
-console.log(info.prompt);      // "A fluffy orange cat..."
-console.log(info.theme);       // "Halloween"
-console.log(info.dateCreated); // 1699012345678
+const info = await AiCats.getInfo('669de24a-1da1-4fcd-84b1-9e55a43a0e0e');
+console.log(info.prompt);      // "In a futuristic space observatory..."
+console.log(info.theme);       // "Default"
+console.log(info.dateCreated); // 1724534067586
 ```
 
 ### `AiCats.search(options?)`
@@ -57,10 +70,10 @@ Search for cat images.
 
 ```typescript
 const results = await AiCats.search({
-  query: 'black cat',    // Search text
-  limit: 20,             // Max results (1-100)
-  theme: Theme.Halloween,// Filter by theme
-  descending: true       // Newest first
+  query: 'rainbow',       // Search text
+  limit: 20,              // Max results (1-100)
+  theme: Theme.Halloween, // Filter by theme
+  descending: true        // Newest first
 });
 
 for (const cat of results) {
@@ -72,7 +85,7 @@ for (const cat of results) {
 Find cats similar to a given cat.
 
 ```typescript
-const similar = await AiCats.getSimilar('abc-123-def', { limit: 5 });
+const similar = await AiCats.getSimilar('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { limit: 5 });
 ```
 
 ### `AiCats.getThemes()`
@@ -92,6 +105,14 @@ const halloweenCount = await AiCats.getCount(Theme.Halloween);
 ```
 
 ## Types
+
+### ResponseType
+```typescript
+'blob'        // Blob object (default)
+'arrayBuffer' // ArrayBuffer
+'base64'      // Base64 encoded string
+'dataUrl'     // Data URL (data:image/jpeg;base64,...)
+```
 
 ### Size
 ```typescript
