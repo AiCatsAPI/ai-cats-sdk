@@ -101,6 +101,7 @@ async function random<T extends ResponseType = 'blob'>(options?: RandomCatOption
   const params = new URLSearchParams();
   if (options?.size) params.set('size', options.size);
   if (options?.theme) params.set('theme', options.theme);
+  params.set('rnd', Math.random().toString()); // Prevent caching
   const query = params.toString() ? `?${params}` : '';
 
   const response = await fetch(`${ApiUrl}/cat${query}`);
