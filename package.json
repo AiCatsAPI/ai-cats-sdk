@@ -1,6 +1,6 @@
 {
   "name": "@aicats/sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official JavaScript SDK for the ai-cats.net API",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

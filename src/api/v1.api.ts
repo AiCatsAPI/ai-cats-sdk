@@ -164,7 +164,7 @@ async function getSearchCompletion(options: SearchOptions = {}): Promise<string>
  * // ['Default', 'Halloween', 'Xmas', ...]
  */
 async function getThemes(): Promise<string[]> {
-  const response = await fetch(`${ApiUrl}/cat/themes`);
+  const response = await fetch(`${ApiUrl}/cat/theme-list`);
   if (!response.ok) {
     throw new Error(`Error fetching themes: ${response.statusText}`);
   }
