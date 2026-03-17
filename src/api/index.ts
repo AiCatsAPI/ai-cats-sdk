@@ -1,1 +1,2 @@
-export { V1Api } from './v1.api';
+export { AiCatsAPI } from './ai-cats-api';
+export type { RandomCatOptions, SearchOptions, SimilarOptions } from './ai-cats-api';

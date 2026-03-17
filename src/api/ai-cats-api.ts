@@ -126,7 +126,7 @@ async function getById<T extends ResponseType = 'blob'>(
   options?: GetByIdOptions<T>,
 ): Promise<ImageResponse<T>> {
   const size = options?.size ?? Size.Large;
-  const response = await fetch(`${ApiUrl}/cat/${id}?size=${size}`);
+  const response = await fetch(`${ApiUrl}/cat/${id}.jpg?size=${size}`);
   if (!response.ok) {
     throw new Error(`Error fetching cat image: ${response.statusText}`);
   }
@@ -251,7 +251,7 @@ async function getCount(theme?: Theme): Promise<number> {
   return data.count;
 }
 
-export const V1Api = {
+export const AiCatsAPI = {
   random,
   getById,
   getInfo,
