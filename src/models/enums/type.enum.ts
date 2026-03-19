@@ -1,7 +1,7 @@
 /**
  * Available media types for AI cat media
  */
-export enum Type {
+export enum MediaType {
   /** All media types */
   All = 'All',
   /** Image media type (Default) */

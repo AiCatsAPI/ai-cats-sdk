@@ -1,5 +1,5 @@
 import { Theme } from '../enums/theme.enum';
-import { Type } from '../enums/type.enum';
+import { MediaType } from '../enums/type.enum';
 
 /**
  * Detailed information about a cat media
@@ -16,5 +16,5 @@ export interface CatInfo {
   /** The theme of the cat media */
   theme: Theme;
   /** The type of media */
-  type: Type;
+  type: MediaType;
 }
