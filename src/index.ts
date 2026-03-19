@@ -5,7 +5,7 @@ export const AiCats = AiCatsAPI;
 
 // Types for SDK users
 export type { CatInfo, SearchResult } from './models';
-export type { RandomCatOptions, SearchOptions, SimilarOptions } from './api';
+export type { RandomCatOptions, SearchOptions, SimilarOptions, CountOptions, GetByIdOptions } from './api';
 
 // Enums for SDK users
-export { Size, Theme } from './models';
+export { Size, Theme, MediaType } from './models';

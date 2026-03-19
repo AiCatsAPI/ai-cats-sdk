@@ -1,4 +1,4 @@
-import { Type } from '../enums/type.enum';
+import { MediaType } from '../enums/type.enum';
 
 /**
  * A search result containing a cat media ID and URL
@@ -9,5 +9,5 @@ export interface SearchResult {
   /** Direct URL to the cat media */
   url: string;
   /** The type of media */
-  type: Type;
+  type: MediaType;
 }

@@ -5,3 +5,4 @@ export type { CatInfo } from './interfaces/cat-info.interface';
 // Enums
 export { Size } from './enums/size.enum';
 export { Theme } from './enums/theme.enum';
+export { MediaType } from './enums/type.enum';

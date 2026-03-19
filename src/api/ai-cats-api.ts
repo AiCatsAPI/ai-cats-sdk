@@ -1,5 +1,5 @@
 import { CatInfo, SearchResult, Size, Theme } from '../models';
-import { Type } from '../models/enums/type.enum';
+import { MediaType } from '../models/enums/type.enum';
 
 const ApiUrl = 'https://api.ai-cats.net/v1';
 
@@ -20,7 +20,7 @@ export type MediaResponse<T extends ResponseType = 'blob'> = T extends 'blob'
 /** Convert ArrayBuffer to desired response type */
 async function toResponseType<T extends ResponseType>(
   buffer: ArrayBuffer,
-  mediaType: Type = Type.Image,
+  mediaType: MediaType = MediaType.Image,
   type: T = 'blob' as T,
 ): Promise<MediaResponse<T>> {
   switch (type) {
@@ -40,12 +40,12 @@ async function toResponseType<T extends ResponseType>(
       for (let i = 0; i < bytes.length; i++) {
         binary += String.fromCharCode(bytes[i]);
       }
-      const mimeType = mediaType === Type.Video ? 'video/mp4' : 'image/jpeg';
+      const mimeType = mediaType === MediaType.Video ? 'video/mp4' : 'image/jpeg';
       return `data:${mimeType};base64,${btoa(binary)}` as MediaResponse<T>;
     }
     case 'blob':
     default:
-      const mimeType = mediaType === Type.Video ? 'video/mp4' : 'image/jpeg';
+      const mimeType = mediaType === MediaType.Video ? 'video/mp4' : 'image/jpeg';
       return new Blob([buffer], { type: mimeType }) as MediaResponse<T>;
   }
 }
@@ -57,7 +57,7 @@ export interface RandomCatOptions<T extends ResponseType = 'blob'> {
   /** Theme of the cat media */
   theme?: Theme;
   /** Filter by media type */
-  type?: Type;
+  type?: MediaType;
   /** Response format (default: blob) */
   responseType?: T;
 }
@@ -77,7 +77,7 @@ export interface SearchOptions {
   /** Media size in results */
   size?: Size;
   /** Filter by media type */
-  type?: Type;
+  type?: MediaType;
 }
 
 /** Options for similar cats */
@@ -93,7 +93,7 @@ export interface GetByIdOptions<T extends ResponseType = 'blob'> {
   /** Media size (default: Large) */
   size?: Size;
   /** media type */
-  type?: Type;
+  type?: MediaType;
   /** Response format (default: blob) */
   responseType?: T;
 }
@@ -102,7 +102,7 @@ export interface CountOptions {
   /** Filter by theme */
   theme?: Theme;
   /** Filter by media type */
-  type?: Type;
+  type?: MediaType;
 }
 
 /**
@@ -144,7 +144,7 @@ async function getById<T extends ResponseType = 'blob'>(
   options?: GetByIdOptions<T>,
 ): Promise<MediaResponse<T>> {
   const size = options?.size ?? Size.Large;
-  const suffix = options?.type === Type.Video ? '.mp4' : '.jpg';
+  const suffix = options?.type === MediaType.Video ? '.mp4' : '.jpg';
   const response = await fetch(`${ApiUrl}/cat/${id}${suffix}?size=${size}`);
   if (!response.ok) {
     throw new Error(`Error fetching cat media: ${response.statusText}`);
