@@ -1,12 +1,13 @@
 import { CatInfo, SearchResult, Size, Theme } from '../models';
+import { Type } from '../models/enums/type.enum';
 
 const ApiUrl = 'https://api.ai-cats.net/v1';
 
-/** Response type for image requests */
+/** Response type for media requests */
 export type ResponseType = 'blob' | 'arrayBuffer' | 'base64' | 'dataUrl';
 
-/** Image response based on responseType */
-export type ImageResponse<T extends ResponseType = 'blob'> = T extends 'blob'
+/** Media response based on responseType */
+export type MediaResponse<T extends ResponseType = 'blob'> = T extends 'blob'
   ? Blob
   : T extends 'arrayBuffer'
     ? ArrayBuffer
@@ -19,18 +20,19 @@ export type ImageResponse<T extends ResponseType = 'blob'> = T extends 'blob'
 /** Convert ArrayBuffer to desired response type */
 async function toResponseType<T extends ResponseType>(
   buffer: ArrayBuffer,
+  mediaType: Type = Type.Image,
   type: T = 'blob' as T,
-): Promise<ImageResponse<T>> {
+): Promise<MediaResponse<T>> {
   switch (type) {
     case 'arrayBuffer':
-      return buffer as ImageResponse<T>;
+      return buffer as MediaResponse<T>;
     case 'base64': {
       const bytes = new Uint8Array(buffer);
       let binary = '';
       for (let i = 0; i < bytes.length; i++) {
         binary += String.fromCharCode(bytes[i]);
       }
-      return btoa(binary) as ImageResponse<T>;
+      return btoa(binary) as MediaResponse<T>;
     }
     case 'dataUrl': {
       const bytes = new Uint8Array(buffer);
@@ -38,20 +40,24 @@ async function toResponseType<T extends ResponseType>(
       for (let i = 0; i < bytes.length; i++) {
         binary += String.fromCharCode(bytes[i]);
       }
-      return `data:image/jpeg;base64,${btoa(binary)}` as ImageResponse<T>;
+      const mimeType = mediaType === Type.Video ? 'video/mp4' : 'image/jpeg';
+      return `data:${mimeType};base64,${btoa(binary)}` as MediaResponse<T>;
     }
     case 'blob':
     default:
-      return new Blob([buffer], { type: 'image/jpeg' }) as ImageResponse<T>;
+      const mimeType = mediaType === Type.Video ? 'video/mp4' : 'image/jpeg';
+      return new Blob([buffer], { type: mimeType }) as MediaResponse<T>;
   }
 }
 
 /** Options for getting a random cat */
 export interface RandomCatOptions<T extends ResponseType = 'blob'> {
-  /** Image size (default: Large) */
+  /** Media size (default: Large) */
   size?: Size;
-  /** Theme of the cat image */
+  /** Theme of the cat media */
   theme?: Theme;
+  /** Filter by media type */
+  type?: Type;
   /** Response format (default: blob) */
   responseType?: T;
 }
@@ -68,55 +74,67 @@ export interface SearchOptions {
   descending?: boolean;
   /** Filter by theme */
   theme?: Theme;
-  /** Image size in results */
+  /** Media size in results */
   size?: Size;
+  /** Filter by media type */
+  type?: Type;
 }
 
 /** Options for similar cats */
 export interface SimilarOptions {
   /** Maximum number of results (1-100, default: 10) */
   limit?: number;
-  /** Image size in results */
+  /** Media size in results */
   size?: Size;
 }
 
 /** Options for getting a cat by ID */
 export interface GetByIdOptions<T extends ResponseType = 'blob'> {
-  /** Image size (default: Large) */
+  /** Media size (default: Large) */
   size?: Size;
+  /** media type */
+  type?: Type;
   /** Response format (default: blob) */
   responseType?: T;
 }
 
+export interface CountOptions {
+  /** Filter by theme */
+  theme?: Theme;
+  /** Filter by media type */
+  type?: Type;
+}
+
 /**
- * Get a random AI-generated cat image
+ * Get a random AI-generated cat media
  * @param options - Optional size, theme, and responseType settings
- * @returns Image in the specified format (default: Blob)
+ * @returns Media in the specified format (default: Blob)
  * @example
  * const blob = await AiCats.random({ theme: Theme.Halloween });
  * const base64 = await AiCats.random({ responseType: 'base64' });
  * const dataUrl = await AiCats.random({ responseType: 'dataUrl' });
  */
-async function random<T extends ResponseType = 'blob'>(options?: RandomCatOptions<T>): Promise<ImageResponse<T>> {
+async function random<T extends ResponseType = 'blob'>(options?: RandomCatOptions<T>): Promise<MediaResponse<T>> {
   const params = new URLSearchParams();
   if (options?.size) params.set('size', options.size);
   if (options?.theme) params.set('theme', options.theme);
+  if (options?.type) params.set('type', options.type);
   params.set('rnd', Math.random().toString()); // Prevent caching
   const query = params.toString() ? `?${params}` : '';
 
   const response = await fetch(`${ApiUrl}/cat${query}`);
   if (!response.ok) {
-    throw new Error(`Error fetching cat image: ${response.statusText}`);
+    throw new Error(`Error fetching cat media: ${response.statusText}`);
   }
   const buffer = await response.arrayBuffer();
-  return toResponseType(buffer, options?.responseType ?? ('blob' as T));
+  return toResponseType(buffer, options?.type, options?.responseType ?? ('blob' as T));
 }
 
 /**
- * Get a specific cat image by ID
- * @param id - The unique cat image ID
+ * Get a specific cat media by ID
+ * @param id - The unique cat media ID
  * @param options - Optional size and responseType settings
- * @returns Image in the specified format (default: Blob)
+ * @returns Media in the specified format (default: Blob)
  * @example
  * const blob = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e');
  * const base64 = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { responseType: 'base64' });
@@ -124,19 +142,20 @@ async function random<T extends ResponseType = 'blob'>(options?: RandomCatOption
 async function getById<T extends ResponseType = 'blob'>(
   id: string,
   options?: GetByIdOptions<T>,
-): Promise<ImageResponse<T>> {
+): Promise<MediaResponse<T>> {
   const size = options?.size ?? Size.Large;
-  const response = await fetch(`${ApiUrl}/cat/${id}.jpg?size=${size}`);
+  const suffix = options?.type === Type.Video ? '.mp4' : '.jpg';
+  const response = await fetch(`${ApiUrl}/cat/${id}${suffix}?size=${size}`);
   if (!response.ok) {
-    throw new Error(`Error fetching cat image: ${response.statusText}`);
+    throw new Error(`Error fetching cat media: ${response.statusText}`);
   }
   const buffer = await response.arrayBuffer();
-  return toResponseType(buffer, options?.responseType ?? ('blob' as T));
+  return toResponseType(buffer, options?.type, options?.responseType ?? ('blob' as T));
 }
 
 /**
- * Get detailed information about a cat image
- * @param id - The unique cat image ID
+ * Get detailed information about a cat media
+ * @param id - The unique cat media ID
  * @returns Cat info including prompt, theme, and creation date
  * @example
  * const info = await AiCats.getInfo('669de24a-1da1-4fcd-84b1-9e55a43a0e0e');
@@ -151,7 +170,7 @@ async function getInfo(id: string): Promise<CatInfo> {
 }
 
 /**
- * Search for cat images
+ * Search for cat media
  * @param options - Search options including query, limit, theme, etc.
  * @returns Array of search results with IDs and URLs
  * @example
@@ -165,6 +184,7 @@ async function search(options: SearchOptions = {}): Promise<SearchResult[]> {
   if (options.descending) params.set('descending', 'true');
   if (options.theme) params.set('theme', options.theme);
   if (options.size) params.set('size', options.size);
+  if (options.type) params.set('type', options.type);
   const query = params.toString() ? `?${params}` : '';
 
   const response = await fetch(`${ApiUrl}/cat/search${query}`);
@@ -208,6 +228,7 @@ async function getSearchCompletion(options: SearchOptions = {}): Promise<string>
   if (options.descending) params.set('descending', 'true');
   if (options.theme) params.set('theme', options.theme);
   if (options.size) params.set('size', options.size);
+  if (options.type) params.set('type', options.type);
   const query = params.toString() ? `?${params}` : '';
 
   const response = await fetch(`${ApiUrl}/cat/search-completion${query}`);
@@ -235,15 +256,20 @@ async function getThemes(): Promise<Theme[]> {
 }
 
 /**
- * Get the total count of cat images
+ * Get the total count of cat media
  * @param theme - Optional theme to filter by
- * @returns Total number of cat images
+ * @returns Total number of cat images/videos
  * @example
  * const total = await AiCats.getCount();
  * const halloweenCount = await AiCats.getCount(Theme.Halloween);
  */
-async function getCount(theme?: Theme): Promise<number> {
-  const response = await fetch(`${ApiUrl}/cat/count${theme ? `?theme=${theme}` : ''}`);
+async function getCount(options: CountOptions = {}): Promise<number> {
+  const params = new URLSearchParams();
+  if (options.theme) params.set('theme', options.theme);
+  if (options.type) params.set('type', options.type);
+  const query = params.toString() ? `?${params}` : '';
+
+  const response = await fetch(`${ApiUrl}/cat/count${query}`);
   if (!response.ok) {
     throw new Error(`Error fetching count: ${response.statusText}`);
   }

@@ -1,17 +1,20 @@
 import { Theme } from '../enums/theme.enum';
+import { Type } from '../enums/type.enum';
 
 /**
- * Detailed information about a cat image
+ * Detailed information about a cat media
  */
 export interface CatInfo {
-  /** Unique identifier for the cat image */
+  /** Unique identifier for the cat media */
   id: string;
-  /** URL to access the cat image */
+  /** URL to access the cat media */
   url: string;
-  /** Unix timestamp when the image was created */
+  /** Unix timestamp when the media was created */
   dateCreated: number;
-  /** The AI prompt used to generate this cat image */
+  /** The AI prompt used to generate this cat media */
   prompt: string;
-  /** The theme of the cat image */
+  /** The theme of the cat media */
   theme: Theme;
+  /** The type of media */
+  type: Type;
 }

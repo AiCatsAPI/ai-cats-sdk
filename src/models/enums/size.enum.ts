@@ -1,5 +1,5 @@
 /**
- * Available image sizes for AI cat images
+ * Available media sizes for AI cat media
  */
 export enum Size {
   /** 1024x1024 pixels (default, highest quality) */

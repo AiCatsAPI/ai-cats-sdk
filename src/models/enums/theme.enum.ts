@@ -1,8 +1,8 @@
 /**
- * Available themes for AI cat images
+ * Available themes for AI cat media
  */
 export enum Theme {
-  /** Standard cat images */
+  /** Standard cat images/videos */
   Default = 'Default',
   /** Spring-themed cats with flowers and nature */
   Spring = 'Spring',
