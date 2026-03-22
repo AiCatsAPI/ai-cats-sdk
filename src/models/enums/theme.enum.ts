@@ -20,4 +20,6 @@ export enum Theme {
   NewYear = 'NewYear',
   /** Easter-themed cats with bunnies and eggs */
   Easter = 'Easter',
+  /** Mystical-themed cats with magical and fantasy elements */
+  Mystical = 'Mystical',
 }
