@@ -2,6 +2,8 @@
 
 Official JavaScript/TypeScript SDK for the [ai-cats.net](https://ai-cats.net) API - Get AI-generated cat images!
 
+[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v2/monitor/1r0f5.svg)](https://uptime.betterstack.com/?utm_source=status_badge)
+
 ## Installation
 
 ```bash
