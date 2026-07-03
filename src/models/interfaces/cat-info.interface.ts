@@ -9,6 +9,8 @@ export interface CatInfo {
   id: string;
   /** URL to access the cat media */
   url: string;
+  /** BlurHash interpretation of the image */
+  blurHash: string;
   /** Unix timestamp when the media was created */
   dateCreated: number;
   /** The AI prompt used to generate this cat media */

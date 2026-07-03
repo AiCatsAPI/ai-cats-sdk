@@ -1,7 +1,7 @@
 import { CatInfo, SearchResult, Size, Theme } from '../models';
 import { MediaType } from '../models/enums/type.enum';
 
-const ApiUrl = 'https://api.ai-cats.net/v1';
+const ApiUrl = 'https://api.ai-cats.net/v2';
 
 /** Response type for media requests */
 export type ResponseType = 'blob' | 'arrayBuffer' | 'base64' | 'dataUrl';
@@ -60,6 +60,18 @@ export interface RandomCatOptions<T extends ResponseType = 'blob'> {
   type?: MediaType;
   /** Response format (default: blob) */
   responseType?: T;
+}
+
+/** Options for getting bulk random cats */
+export interface RandomBulkCatOptions {
+  /** Media size (default: Large) */
+  size?: Size;
+  /** Theme of the cat media */
+  theme?: Theme;
+  /** Filter by media type */
+  type?: MediaType;
+  /** Maximum number of results (1-100, default: 10) */
+  limit?: number;
 }
 
 /** Options for searching cats */
@@ -122,13 +134,37 @@ async function random<T extends ResponseType = 'blob'>(options?: RandomCatOption
   params.set('rnd', Math.random().toString()); // Prevent caching
   const query = params.toString() ? `?${params}` : '';
 
-  const response = await fetch(`${ApiUrl}/cat${query}`);
+  const response = await fetch(`${ApiUrl}/cats/random${query}`);
   if (!response.ok) {
     throw new Error(`Error fetching cat media: ${response.statusText}`);
   }
   const buffer = await response.arrayBuffer();
   return toResponseType(buffer, options?.type, options?.responseType ?? ('blob' as T));
 }
+
+/**
+ * Get a bulk of random AI-generated cat media
+ * @param options - Optional bulk request options
+ * @returns Array of search results with IDs and URLs
+ * @example
+ * const info = await AiCats.randomBulk({ limit: 5, theme: Theme.Halloween });
+ * console.log(info); // [{ id: '...', url: '...', blurHash: '...', type: '...' }, ...]
+ */
+async function randomBulk(options?: RandomBulkCatOptions): Promise<SearchResult> {
+  const params = new URLSearchParams();
+  if (options?.size) params.set('size', options.size);
+  if (options?.theme) params.set('theme', options.theme);
+  if (options?.type) params.set('type', options.type);
+  if (options?.limit) params.set('limit', options.limit.toString());
+  const query = params.toString() ? `?${params}` : '';
+
+  const response = await fetch(`${ApiUrl}/cats/random/bulk${query}`);
+  if (!response.ok) {
+    throw new Error(`Error fetching bulk cat media: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 
 /**
  * Get a specific cat media by ID
@@ -162,7 +198,7 @@ async function getById<T extends ResponseType = 'blob'>(
  * console.log(info.prompt); // "In a futuristic space observatory..."
  */
 async function getInfo(id: string): Promise<CatInfo> {
-  const response = await fetch(`${ApiUrl}/cat/info/${id}`);
+  const response = await fetch(`${ApiUrl}/cats/${id}/info`);
   if (!response.ok) {
     throw new Error(`Error fetching cat info: ${response.statusText}`);
   }
@@ -187,7 +223,7 @@ async function search(options: SearchOptions = {}): Promise<SearchResult[]> {
   if (options.type) params.set('type', options.type);
   const query = params.toString() ? `?${params}` : '';
 
-  const response = await fetch(`${ApiUrl}/cat/search${query}`);
+  const response = await fetch(`${ApiUrl}/cats/search${query}`);
   if (!response.ok) {
     throw new Error(`Error searching for cats: ${response.statusText}`);
   }
@@ -208,7 +244,7 @@ async function getSimilar(id: string, options?: SimilarOptions): Promise<SearchR
   if (options?.size) params.set('size', options.size);
   const query = params.toString() ? `?${params}` : '';
 
-  const response = await fetch(`${ApiUrl}/cat/similar/${id}${query}`);
+  const response = await fetch(`${ApiUrl}/cats/${id}/similar${query}`);
   if (!response.ok) {
     throw new Error(`Error fetching similar cats: ${response.statusText}`);
   }
@@ -231,7 +267,7 @@ async function getSearchCompletion(options: SearchOptions = {}): Promise<string>
   if (options.type) params.set('type', options.type);
   const query = params.toString() ? `?${params}` : '';
 
-  const response = await fetch(`${ApiUrl}/cat/search-completion${query}`);
+  const response = await fetch(`${ApiUrl}/cats/search-completion${query}`);
   if (!response.ok) {
     throw new Error(`Error fetching completion: ${response.statusText}`);
   }
@@ -247,7 +283,7 @@ async function getSearchCompletion(options: SearchOptions = {}): Promise<string>
  * // ['Default', 'Halloween', 'Xmas', ...]
  */
 async function getThemes(): Promise<Theme[]> {
-  const response = await fetch(`${ApiUrl}/cat/theme-list`);
+  const response = await fetch(`${ApiUrl}/themes`);
   if (!response.ok) {
     throw new Error(`Error fetching themes: ${response.statusText}`);
   }
@@ -257,7 +293,7 @@ async function getThemes(): Promise<Theme[]> {
 
 /**
  * Get the total count of cat media
- * @param theme - Optional theme to filter by
+ * @param options - Count Options
  * @returns Total number of cat images/videos
  * @example
  * const total = await AiCats.getCount();
@@ -269,7 +305,7 @@ async function getCount(options: CountOptions = {}): Promise<number> {
   if (options.type) params.set('type', options.type);
   const query = params.toString() ? `?${params}` : '';
 
-  const response = await fetch(`${ApiUrl}/cat/count${query}`);
+  const response = await fetch(`${ApiUrl}/cats/count${query}`);
   if (!response.ok) {
     throw new Error(`Error fetching count: ${response.statusText}`);
   }
@@ -279,6 +315,7 @@ async function getCount(options: CountOptions = {}): Promise<number> {
 
 export const AiCatsAPI = {
   random,
+  randomBulk,
   getById,
   getInfo,
   search,

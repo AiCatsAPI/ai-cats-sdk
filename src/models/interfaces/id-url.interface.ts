@@ -8,6 +8,8 @@ export interface SearchResult {
   id: string;
   /** Direct URL to the cat media */
   url: string;
+  /** BlurHash interpretation of the image */
+  blurHash: string;
   /** The type of media */
   type: MediaType;
 }

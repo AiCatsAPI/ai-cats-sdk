@@ -15,8 +15,8 @@ npm install @aicats/sdk
 ```typescript
 import { AiCats, Theme, Size } from '@aicats/sdk';
 
-// Get a random cat image
-const imageBlob = await AiCats.random();
+// Get a random cat image/video
+const mediaBlob = await AiCats.random();
 
 // Get a Halloween-themed cat
 const spookyCat = await AiCats.random({ theme: Theme.Halloween });
@@ -28,11 +28,11 @@ const results = await AiCats.search({ query: 'orange fluffy cat', limit: 10 });
 ## API Reference
 
 ### `AiCats.random(options?)`
-Get a random AI-generated cat image.
+Get a random AI-generated cat image/video.
 
 ```typescript
 const blob = await AiCats.random({
-  size: Size.Medium,       // Image size (default: Large)
+  size: Size.Medium,       // Image/Video size (default: Large)
   theme: Theme.Xmas,       // Optional theme
   responseType: 'blob'     // 'blob' | 'arrayBuffer' | 'base64' | 'dataUrl'
 });
@@ -44,8 +44,23 @@ const base64 = await AiCats.random({ responseType: 'base64' });
 const dataUrl = await AiCats.random({ responseType: 'dataUrl' });
 ```
 
+### `AiCats.randomBulk(options?)`
+Get multiple random cat images/videos at once.
+
+```typescript
+const results = await AiCats.randomBulk({ 
+    limit: 5,           // Number of images/videos to fetch (1-100)
+    size: Size.Small,   // Size of images/videos
+    theme: Theme.Spring // Filter by theme
+});
+
+for (const cat of results) {
+  console.log(cat.id, cat.url);
+}
+```
+
 ### `AiCats.getById(id, options?)`
-Get a specific cat image by ID.
+Get a specific cat image/video by ID.
 
 ```typescript
 const blob = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { size: Size.Small });
@@ -58,7 +73,7 @@ const dataUrl = await AiCats.getById('669de24a-1da1-4fcd-84b1-9e55a43a0e0e', { r
 ```
 
 ### `AiCats.getInfo(id)`
-Get detailed information about a cat image.
+Get detailed information about a cat image/video.
 
 ```typescript
 const info = await AiCats.getInfo('669de24a-1da1-4fcd-84b1-9e55a43a0e0e');
@@ -68,7 +83,7 @@ console.log(info.dateCreated); // 1724534067586
 ```
 
 ### `AiCats.search(options?)`
-Search for cat images.
+Search for cat images/videos.
 
 ```typescript
 const results = await AiCats.search({
@@ -99,7 +114,7 @@ const themes = await AiCats.getThemes();
 ```
 
 ### `AiCats.getCount(theme?)`
-Get the total number of cat images.
+Get the total number of cat images/videos.
 
 ```typescript
 const total = await AiCats.getCount();

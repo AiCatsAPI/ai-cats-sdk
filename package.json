@@ -1,6 +1,6 @@
 {
   "name": "@aicats/sdk",
-  "version": "1.3.0",
+  "version": "2.1.0",
   "description": "Official JavaScript SDK for the ai-cats.net API",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -46,7 +46,7 @@
   },
   "homepage": "https://ai-cats.net",
   "devDependencies": {
-    "prettier": "^3.8.1",
+    "prettier": "^3.9.4",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }
